@@ -3,8 +3,10 @@ package cmd
 // Flags
 const (
 	dryRunFlag    = "dry-run"
+	buildFileFlag = "build-file"
 	imageFlag     = "image"
 	imagesDirFlag = "images-dir"
+	logLevelFlag  = "log-level"
 
 	imageFQINFlag        = "image-fqin"
 	fromImageFlag        = "from-image"
@@ -17,19 +19,32 @@ const (
 
 	pushFlag      = "push"
 	tagLatestFlag = "tag-latest"
+
+	nameFlag  = "name"
+	emailFlag = "email"
+)
+const (
+	defaultLogLevel = "info"
 )
 
 // Filenames
 const (
-	gojoFilename      = ".gojo.yaml"
-	containerfileName = "Containerfile"
+	defaultBuildFileName     = ".build.yaml"
+	defaultContainerfileName = "Containerfile"
 )
 
 // Keys
 const (
-	contentKey = "content"
-	nameKey    = "name"
-	enabledKey = "enabled"
+	contentKey        = "content"
+	repoKey           = "repo"
+	fileKey           = "file"
+	nameKey           = "name"
+	enabledKey        = "enabled"
+	msgKey     string = "message"
+	hashKey           = "hash"
+	commitKey         = "commit"
+
+	versionKey = "VERSION"
 )
 
 // Actions

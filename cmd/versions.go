@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/lcavajani/gojo/pkg/provider"
 	"github.com/lcavajani/gojo/pkg/util"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func Versions() *cobra.Command {
@@ -14,7 +16,8 @@ func Versions() *cobra.Command {
 		Example: `gojo versions list --image-dir ~/image-git-dir --image nextcloud
 gojo versions find --image-dir ~/image-git-dir --image nextcloud
 `,
-		SilenceUsage: true,
+		SilenceUsage:      true,
+		PersistentPreRunE: SetGlobalLogLevel,
 	}
 
 	AddCommonPersistentFlags(listCommand)
@@ -47,41 +50,59 @@ func versions(command *cobra.Command, args []string) error {
 
 	log.Info().Bool(enabledKey, opt.dryRun).Msg(dryRunFlag)
 
-	ibc, err := decodeImageFromFile(opt)
+	build, err := core.NewBuildFromManifest(opt.buildFilePath)
 	if err != nil {
 		return err
 	}
 
-	if ibc.Spec.TagBuild == nil {
-		log.Warn().Msg("no tag build defined, nothing to do")
+	if len(build.Spec.Sources) == 0 {
+		log.Warn().Msg("no value sources defined, nothing to do")
 		return nil
 	}
 
-	repo, err := provider.New(flagSet, ibc)
-	if err != nil {
-		return err
-	}
-	v, err := repo.GetLatest()
-	if err != nil {
-		return err
+	if err := build.ValidatePreProcess(); err != nil {
+		log.Fatal().AnErr("err", err).Msg("build manifest validation")
 	}
 
-	version := util.SanitizeVersion(v)
+	if err = setFacts(flagSet, build.Spec.Facts, build.Spec.Sources); err != nil {
+		log.Fatal().AnErr("err", err).Msg("retrieve facts")
+	}
 
-	// TODO: Tag shoud have different strategies
-	ibc.Metadata.Tag = version
-
-	if ibc.Spec.TagBuild.Version != version {
-		log.Info().Str("arg", "VERSION").
-			Str("current", ibc.Spec.TagBuild.Version).
-			Str("new", version).
-			Msg("set new version")
-		ibc.Spec.TagBuild.Version = version
+	if build.Metadata.Tag, err = core.BuildTag(build.Spec.Facts, build.Spec.TagFormat, build.Metadata.Context); err != nil {
+		return err
 	}
 
 	if opt.dryRun || (action == listAction) {
 		return nil
 	}
 
-	return ibc.WriteToFile(ibc.Metadata.Path)
+	return build.WriteToFile(build.Metadata.Path)
+}
+
+func setFacts(flagSet *pflag.FlagSet, facts []*core.Fact, sources []core.Source) error {
+	for _, fact := range facts {
+		if fact.Source == "" {
+			continue
+		}
+		for _, src := range sources {
+			if fact.Source == src.Name {
+				repo, err := provider.New(flagSet, src)
+				if err != nil {
+					return err
+				}
+
+				if fact.Value, err = repo.GetLatest(); err != nil {
+					return err
+				}
+
+				if fact.Kind == core.VersionFactKind {
+					fact.Value = util.SanitizeVersion(fact.Value)
+				}
+			}
+		}
+		if fact.Value == "" {
+			log.Fatal().Msgf("no value found for fact with name: %s", fact.Name)
+		}
+	}
+	return nil
 }

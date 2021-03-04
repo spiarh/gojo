@@ -3,7 +3,7 @@ package manager
 import (
 	"fmt"
 
-	"github.com/lcavajani/gojo/pkg/buildconf"
+	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/lcavajani/gojo/pkg/execute"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -32,16 +32,16 @@ func NewPodman(push, tagLatest, dryRun bool) (*Podman, error) {
 	}, nil
 }
 
-func (p *Podman) Build(ibc *buildconf.Image) error {
+func (p *Podman) Build(build *core.Build) error {
 	task := p.execTask
 	task.AddArgs("build")
-	task.AddArgs("-t", ibc.Metadata.GetFullName())
+	task.AddArgs("-t", build.Metadata.String())
 
-	buildArgs := ibc.GetBuildArgs()
+	buildArgs := build.GetBuildArgs()
 	for arg, val := range buildArgs {
 		task.AddArgs("--build-arg", fmt.Sprintf("%s=%s", arg, val))
 	}
-	task.AddArgs(ibc.Metadata.Context)
+	task.AddArgs(build.Metadata.Context)
 
 	_, err := task.Execute()
 	if err != nil {
@@ -49,14 +49,14 @@ func (p *Podman) Build(ibc *buildconf.Image) error {
 	}
 
 	if p.tagLatest {
-		err := p.tag(ibc.Metadata, "latest")
+		err := p.tag(build.Metadata, "latest")
 		if err != nil {
 			return err
 		}
 	}
 
 	if p.push {
-		err := p.Push(ibc.Metadata)
+		err := p.Push(build.Metadata)
 		if err != nil {
 			return err
 		}
@@ -65,10 +65,10 @@ func (p *Podman) Build(ibc *buildconf.Image) error {
 	return nil
 }
 
-func (p *Podman) tag(image *buildconf.ImageMeta, tag string) error {
+func (p *Podman) tag(image *core.Image, tag string) error {
 	task := p.execTask
 	task.AddArgs("tag")
-	task.AddArgs(image.GetFullName(), image.GetFullNameWithTag(tag))
+	task.AddArgs(image.String(), image.StringWithTag(tag))
 
 	_, err := task.Execute()
 	if err != nil {
@@ -78,10 +78,10 @@ func (p *Podman) tag(image *buildconf.ImageMeta, tag string) error {
 	return nil
 }
 
-func (p *Podman) Push(image *buildconf.ImageMeta) error {
+func (p *Podman) Push(image *core.Image) error {
 	task := p.execTask
 	task.AddArgs("push")
-	task.AddArgs(image.GetFullName())
+	task.AddArgs(image.String())
 
 	_, err := task.Execute()
 	if err != nil {
@@ -89,7 +89,7 @@ func (p *Podman) Push(image *buildconf.ImageMeta) error {
 	}
 
 	if p.tagLatest {
-		task.Args[len(task.Args)-1] = image.GetFullNameWithTag("latest")
+		task.Args[len(task.Args)-1] = image.StringWithTag("latest")
 		_, err := task.Execute()
 		if err != nil {
 			return err

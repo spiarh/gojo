@@ -11,7 +11,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/lcavajani/gojo/pkg/buildconf"
 	"github.com/lcavajani/gojo/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -37,7 +36,7 @@ type Alpine struct {
 
 func NewAlpine(mirror, arch, versionId, repo, pkgName string) *Alpine {
 	return &Alpine{
-		log:       log.With().Str("provider", buildconf.AlpineProviderName).Logger(),
+		log:       log.With().Str("provider", string(ProviderAlpine)).Logger(),
 		mirror:    mirror,
 		arch:      arch,
 		versionId: versionId,

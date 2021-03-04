@@ -1,28 +1,32 @@
 package cmd
 
 import (
+	"fmt"
 	"path"
 
-	"github.com/lcavajani/gojo/pkg/buildconf"
+	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/lcavajani/gojo/pkg/util"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
+var imageFQIN, fromImage, fromImageBuilder string
+
 func New() *cobra.Command {
 	var command = &cobra.Command{
-		Use:          "scaffold",
-		Short:        "Scaffold a new image project",
-		Example:      "  gojo new github / gojo new alpine",
-		SilenceUsage: true,
+		Use:               "scaffold",
+		Short:             "Scaffold a new image project",
+		Example:           "  gojo new github / gojo new alpine",
+		SilenceUsage:      true,
+		PersistentPreRunE: SetGlobalLogLevel,
 	}
 
 	AddCommonPersistentFlags(command)
 
-	command.PersistentFlags().String(imageFQINFlag, "", "Fully qualified image name (FQIN)")
-	command.PersistentFlags().String(fromImageFlag, "", "Image to use for the base image")
-	command.PersistentFlags().String(fromImageBuilderFlag, "", "Image to use for the builder")
+	command.PersistentFlags().StringVar(&imageFQIN, imageFQINFlag, "", "Fully qualified image name (FQIN)")
+	command.PersistentFlags().StringVar(&fromImage, fromImageFlag, "", "Image to use for the base image")
+	command.PersistentFlags().StringVar(&fromImageBuilder, fromImageBuilderFlag, "", "Image to use for the builder")
 
 	command.MarkPersistentFlagRequired(imageFQINFlag)
 	command.MarkPersistentFlagRequired(fromImageFlag)
@@ -46,22 +50,6 @@ func New() *cobra.Command {
 	return command
 }
 
-func getScaffoldFlags(flagSet *pflag.FlagSet) (string, string, string, error) {
-	var imageFQIN, fromImage, fromImageBuilder string
-	var err error
-
-	if imageFQIN, err = flagSet.GetString(imageFQINFlag); err != nil {
-		return imageFQIN, fromImage, fromImageBuilder, err
-	}
-	if fromImage, err = flagSet.GetString(fromImageFlag); err != nil {
-		return imageFQIN, fromImage, fromImageBuilder, err
-	}
-	if fromImageBuilder, err = flagSet.GetString(fromImageBuilderFlag); err != nil {
-		return imageFQIN, fromImage, fromImageBuilder, err
-	}
-	return imageFQIN, fromImage, fromImageBuilder, nil
-}
-
 func scaffoldProject(command *cobra.Command, args []string) error {
 	var err error
 	providerType := command.Use
@@ -71,57 +59,46 @@ func scaffoldProject(command *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-
-	imageFQIN, fromImage, fromImageBuilder, err := getScaffoldFlags(flagSet)
-	if err != nil {
-		return err
-	}
-
 	log.Info().Bool(enabledKey, opt.dryRun).Msg(dryRunFlag)
 
 	// Objects
-	ibc, err := buildconf.NewImage(imageFQIN, fromImage)
+	build, err := core.NewBuild(imageFQIN, fromImage)
 	if err != nil {
 		return err
 	}
 
 	if fromImageBuilder != "" {
-		fromImageBuilderMeta, err := buildconf.NewImageMetaFromFullName(fromImageBuilder)
+		fromImageBuilderMeta, err := core.NewImageFromFQIN(fromImageBuilder)
 		if err != nil {
 			return err
 		}
-		ibc.Spec.FromImageBuilder = &fromImageBuilderMeta
+		build.Spec.FromImageBuilder = &fromImageBuilderMeta
 	}
 
 	switch providerType {
 	case alpine:
-		err = addAlpineProvider(ibc, flagSet)
+		err = addAlpineProvider(build, flagSet)
 		if err != nil {
 			return err
 		}
 	case github:
-		err = addGitHubProvider(ibc, flagSet)
+		err = addGitHubProvider(build, flagSet)
 		if err != nil {
 			return err
 		}
 	}
 
-	ibcBytes, err := buildconf.Encode(ibc)
+	containerfile, err := core.TemplateContainerfile(build)
 	if err != nil {
 		return err
 	}
-
-	containerfile, err := buildconf.TemplateContainerfile(ibc)
-	if err != nil {
-		return err
-	}
-
-	log.Debug().Str(nameKey, gojoFilename).
-		Bytes(contentKey, ibcBytes).
+	log.Info().Str(nameKey, defaultBuildFileName).
 		Msg("gojo image build file creation")
-	log.Debug().Str(nameKey, containerfileName).
-		Bytes(contentKey, containerfile).
+	fmt.Println(build)
+
+	log.Info().Str(nameKey, defaultContainerfileName).
 		Msg("Containerfile creation")
+	fmt.Println(containerfile)
 
 	if opt.dryRun {
 		return nil
@@ -132,12 +109,13 @@ func scaffoldProject(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	ibc.WriteToFile(opt.ibcPath)
-	containerfile.WriteToFile(path.Join(opt.imageDir, containerfileName))
+	build.WriteToFile(opt.buildFilePath)
+	containerfile.WriteToFile(path.Join(opt.imageDir, defaultContainerfileName))
 
 	return nil
 }
 
+// Simple
 var newSimpleCommand = &cobra.Command{
 	Use:          simple,
 	RunE:         func(cmd *cobra.Command, args []string) error { return scaffoldProject(cmd, args) },
@@ -151,7 +129,7 @@ var newAlpineCommand = &cobra.Command{
 	SilenceUsage: true,
 }
 
-func addAlpineProvider(image *buildconf.Image, flagSet *pflag.FlagSet) error {
+func addAlpineProvider(build *core.Build, flagSet *pflag.FlagSet) error {
 	var pkg, repo, versionId string
 	var err error
 
@@ -165,11 +143,13 @@ func addAlpineProvider(image *buildconf.Image, flagSet *pflag.FlagSet) error {
 		return err
 	}
 
-	tagBuild := buildconf.NewTagBuild(buildconf.Version, buildconf.AlpineProviderName)
-	image.Spec.TagBuild = tagBuild
+	source := core.NewAlpineSource(alpine, pkg, repo, versionId)
+	build.Spec.Sources = []core.Source{source}
 
-	source := buildconf.NewAlpineSource(buildconf.AlpineProviderName, pkg, repo, versionId)
-	image.Spec.Sources = []buildconf.Source{source}
+	fact := core.NewFact(versionKey, "", alpine, core.VersionFactKind)
+	build.Spec.BuildArgs = append(build.Spec.BuildArgs, versionKey)
+	build.Spec.Facts = append(build.Spec.Facts, fact)
+	build.Spec.TagFormat = core.TagFormatVersion
 
 	return nil
 }
@@ -181,7 +161,7 @@ var newGitHubCommand = &cobra.Command{
 	SilenceUsage: true,
 }
 
-func addGitHubProvider(image *buildconf.Image, flagSet *pflag.FlagSet) error {
+func addGitHubProvider(build *core.Build, flagSet *pflag.FlagSet) error {
 	var repo, owner string
 	var err error
 
@@ -192,11 +172,13 @@ func addGitHubProvider(image *buildconf.Image, flagSet *pflag.FlagSet) error {
 		return err
 	}
 
-	tagBuild := buildconf.NewTagBuild(buildconf.Version, buildconf.GitHubProviderName)
-	image.Spec.TagBuild = tagBuild
+	source := core.NewGitHubSource(github, repo, owner)
+	build.Spec.Sources = []core.Source{source}
 
-	source := buildconf.NewGitHubSource(buildconf.GitHubProviderName, repo, owner)
-	image.Spec.Sources = []buildconf.Source{source}
+	fact := core.NewFact(versionKey, "", github, core.VersionFactKind)
+	build.Spec.BuildArgs = append(build.Spec.BuildArgs, versionKey)
+	build.Spec.Facts = append(build.Spec.Facts, fact)
+	build.Spec.TagFormat = core.TagFormatVersion
 
 	return nil
 }
