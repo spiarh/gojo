@@ -11,7 +11,7 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/google/go-github/v33/github"
-	"github.com/lcavajani/gojo/pkg/buildconf"
+	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/lcavajani/gojo/pkg/util"
 	"golang.org/x/oauth2"
 )
@@ -24,9 +24,9 @@ type GitHub struct {
 	client *github.Client
 	log    zerolog.Logger
 
-	owner      string                 `yaml:"owner"`
-	repository string                 `yaml:"repository"`
-	object     buildconf.GitHubObject `yaml:"repository"`
+	owner      string            `yaml:"owner"`
+	repository string            `yaml:"repository"`
+	object     core.GitHubObject `yaml:"repository"`
 }
 
 type Versions struct {
@@ -48,10 +48,10 @@ func newGitHubClient() *github.Client {
 	return github.NewClient(oauth2.NewClient(ctx, ts))
 }
 
-func NewGitHub(owner, repo string, object buildconf.GitHubObject) *GitHub {
+func NewGitHub(owner, repo string, object core.GitHubObject) *GitHub {
 	return &GitHub{
 		client:     newGitHubClient(),
-		log:        log.With().Str("provider", buildconf.GitHubProviderName).Logger(),
+		log:        log.With().Str("provider", string(ProviderGitHub)).Logger(),
 		owner:      owner,
 		repository: repo,
 		object:     object,
@@ -77,7 +77,7 @@ func (g *GitHub) GetAll() (*Versions, error) {
 	var v Versions
 
 	switch g.object {
-	case buildconf.GitHubObjectRelease:
+	case core.GitHubObjectRelease:
 		releases, err := g.getRepoReleases()
 		if err != nil {
 			return nil, err
@@ -90,7 +90,7 @@ func (g *GitHub) GetAll() (*Versions, error) {
 			}
 			v.stable = append(v.stable, *r.TagName)
 		}
-	case buildconf.GitHubObjectTag:
+	case core.GitHubObjectTag:
 		tags, err := g.getRepoTags()
 		if err != nil {
 			return nil, err

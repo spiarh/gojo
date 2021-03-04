@@ -3,7 +3,7 @@ package provider
 import (
 	"fmt"
 
-	"github.com/lcavajani/gojo/pkg/buildconf"
+	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/spf13/pflag"
 )
 
@@ -18,18 +18,19 @@ type provider interface {
 var _ provider = &Alpine{}
 var _ provider = &GitHub{}
 
-func New(pflagSet *pflag.FlagSet, conf *buildconf.Image) (provider, error) {
-	var source buildconf.Source
-	for _, src := range conf.Spec.Sources {
-		if src.Name == conf.Spec.TagBuild.Source {
-			source = src
-			break
-		}
-	}
+// func New(pflagSet *pflag.FlagSet, build *core.Build) (provider, error) {
+func New(pflagSet *pflag.FlagSet, source core.Source) (provider, error) {
+	// var source core.Source
+	// for _, src := range build.Spec.Sources {
+	// 	if src.Name == build.Spec.TagBuild.Source {
+	// 		source = src
+	// 		break
+	// 	}
+	// }
 
-	if (source == buildconf.Source{}) {
-		return nil, fmt.Errorf("no source found for name: %s", conf.Spec.TagBuild.Source)
-	}
+	// if (source == core.Source{}) {
+	// 	return nil, fmt.Errorf("no source found for name: %s", build.Spec.TagBuild.Source)
+	// }
 
 	switch {
 	case source.Provider.Alpine != nil:
@@ -43,10 +44,10 @@ func New(pflagSet *pflag.FlagSet, conf *buildconf.Image) (provider, error) {
 		return prvdr, nil
 	}
 
-	return nil, fmt.Errorf("provider type not recognized: %s", conf.Spec.TagBuild.Source)
+	return nil, fmt.Errorf("provider type not recognized: %s", source.Name)
 }
 
-func setDefaultsAlpine(repo *buildconf.AlpineSource) {
+func setDefaultsAlpine(repo *core.AlpineSource) {
 	if repo.Mirror == "" {
 		repo.Mirror = alpineDefaultMirror
 	}

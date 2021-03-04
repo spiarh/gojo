@@ -14,6 +14,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+// IsTTYAllocated returns true when a TTY is allocated.
+func IsTTYAllocated() bool {
+	if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
+		return true
+	}
+	return false
+}
+
+// TODO: Rename fot ParseFQIN
 func ParseImageFullName(image string) (string, string, string, error) {
 	var registry, name, tag string
 	var errMsg = fmt.Errorf("invalid image name: %s", image)
@@ -112,6 +121,34 @@ func MakeDir(path string, perm fs.FileMode) error {
 			return errDir
 		}
 
+	}
+	return nil
+}
+
+func GetRelPathFromPathInTree(root, file string) (string, error) {
+	rootSlice := strings.Split(root, "/")
+	fileSlice := strings.Split(file, "/")
+
+	for i := range rootSlice {
+		if rootSlice[i] != fileSlice[i] {
+			return "", fmt.Errorf("paths are not in the same tree: %s, %s", root, file)
+		}
+	}
+
+	tmp := strings.Split(file, "/")[len(rootSlice):]
+	relPath := strings.Join(tmp, "/")
+
+	return relPath, nil
+}
+
+func EnsureStringSliceDuplicates(stringSlice []string) error {
+	keys := make(map[string]struct{})
+	for _, entry := range stringSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = struct{}{}
+			continue
+		}
+		return fmt.Errorf("duplicate values")
 	}
 	return nil
 }

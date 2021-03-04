@@ -3,7 +3,7 @@ package manager
 import (
 	"fmt"
 
-	"github.com/lcavajani/gojo/pkg/buildconf"
+	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/spf13/pflag"
 )
 
@@ -17,7 +17,7 @@ const (
 )
 
 type manager interface {
-	Build(ibc *buildconf.Image) error
+	Build(ibc *core.Build) error
 }
 
 var _ manager = &Podman{}

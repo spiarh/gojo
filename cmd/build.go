@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/lcavajani/gojo/pkg/buildconf"
+	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/lcavajani/gojo/pkg/manager"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -9,11 +9,12 @@ import (
 
 func Build() *cobra.Command {
 	var command = &cobra.Command{
-		Use:              "build",
-		Short:            "Build a container image",
-		Example:          "gojo build --push --tag-latest haproxy",
-		SilenceUsage:     true,
-		TraverseChildren: true,
+		Use:               "build",
+		Short:             "Build a container image",
+		Example:           "gojo build --push --tag-latest haproxy",
+		SilenceUsage:      true,
+		TraverseChildren:  true,
+		PersistentPreRunE: SetGlobalLogLevel,
 	}
 
 	command.AddCommand(podmanCommand)
@@ -38,21 +39,22 @@ func build(command *cobra.Command, args []string) error {
 	}
 	log.Info().Bool(enabledKey, opt.dryRun).Msg(dryRunFlag)
 
-	ibc, err := buildconf.NewImageFromFile(opt.ibcPath)
+	build, err := core.NewBuildFromManifest(opt.buildFilePath)
 	if err != nil {
 		return err
 	}
-	ibc.Metadata.Context = opt.imageDir
-	ibc.Metadata.Path = opt.ibcPath
 
-	// TODO: Add image validation
+	if err := build.Validate(); err != nil {
+		log.Fatal().AnErr("err", err).Msg("build manifest validation")
+	}
+
 	mgrType := command.Use
 	mgr, err := manager.New(flagSet, mgrType)
 	if err != nil {
 		return err
 	}
 
-	err = mgr.Build(ibc)
+	err = mgr.Build(build)
 	if err != nil {
 		return err
 	}
