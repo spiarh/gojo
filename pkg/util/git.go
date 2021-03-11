@@ -35,17 +35,11 @@ func GitIsFileClean(status git.Status, relPath string) bool {
 // GitIsFileUnmodifiedWorktree returns true if the files is modified in Worktree.
 func GitIsFileUnmodifiedWorktree(status git.Status, relPath string) bool {
 	fStatus := status.File(relPath)
-	if fStatus.Worktree != git.Unmodified {
-		return false
-	}
-	return true
+	return fStatus.Worktree == git.Unmodified
 }
 
 // GitIsFileUnmodifiedStaging returns true if the files is modified in Staging.
 func GitIsFileUnmodifiedStaging(status git.Status, relPath string) bool {
 	fStatus := status.File(relPath)
-	if fStatus.Staging != git.Unmodified {
-		return false
-	}
-	return true
+	return fStatus.Staging == git.Unmodified
 }

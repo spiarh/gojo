@@ -20,20 +20,35 @@ func main() {
 	var rootCmd = &cobra.Command{
 		Use: "gojo",
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			if err := cmd.Help(); err != nil {
+				log.Fatal().AnErr("err", err).Msg("")
+			}
 		},
 		SilenceUsage: true,
 	}
 
-	cmdBuild := cmd.Build()
-	cmdCommit := cmd.Commit()
-	cmdNew := cmd.New()
-	cmdVersions := cmd.Versions()
+	var cmdBuild, cmdCommit, cmdFacts, cmdScaffold, cmdVersion *cobra.Command
+	var err error
+
+	if cmdBuild, err = cmd.Build(); err != nil {
+		log.Fatal().AnErr("err", err).Msg("")
+	}
+	if cmdCommit, err = cmd.Commit(); err != nil {
+		log.Fatal().AnErr("err", err).Msg("")
+	}
+	if cmdFacts, err = cmd.Facts(); err != nil {
+		log.Fatal().AnErr("err", err).Msg("")
+	}
+	if cmdScaffold, err = cmd.Scaffold(); err != nil {
+		log.Fatal().AnErr("err", err).Msg("")
+	}
+	cmdVersion = cmd.Version()
 
 	rootCmd.AddCommand(cmdBuild)
 	rootCmd.AddCommand(cmdCommit)
-	rootCmd.AddCommand(cmdNew)
-	rootCmd.AddCommand(cmdVersions)
+	rootCmd.AddCommand(cmdFacts)
+	rootCmd.AddCommand(cmdScaffold)
+	rootCmd.AddCommand(cmdVersion)
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}

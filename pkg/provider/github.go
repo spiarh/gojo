@@ -11,9 +11,10 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/google/go-github/v33/github"
+	"golang.org/x/oauth2"
+
 	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/lcavajani/gojo/pkg/util"
-	"golang.org/x/oauth2"
 )
 
 const (

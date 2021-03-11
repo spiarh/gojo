@@ -53,10 +53,7 @@ func ParseImageFullName(image string) (string, string, string, error) {
 }
 
 func SanitizeVersion(v string) string {
-	if strings.HasPrefix(v, "v") {
-		v = v[1:]
-	}
-	return v
+	return strings.TrimPrefix(v, "v")
 }
 
 func ExtractFileAsByteFromTar(in io.Reader, filename string) ([]byte, error) {
@@ -96,14 +93,14 @@ func WriteToFile(path string, data []byte, perm fs.FileMode) (err error) {
 	if err != nil {
 		return err
 	}
-	defer func() error {
-		if err := f.Close(); err != nil {
-			return err
+	defer func() {
+		if closeErr := f.Close(); err != nil {
+			err = closeErr
 		}
-		return nil
 	}()
 
-	return ioutil.WriteFile(path, data, perm)
+	err = ioutil.WriteFile(path, data, perm)
+	return
 }
 
 func MakeDir(path string, perm fs.FileMode) error {

@@ -111,8 +111,8 @@ func (et *ExecTask) Execute() (ExecResult, error) {
 	}
 
 	return ExecResult{
-		Stdout:   string(stdoutBuff.Bytes()),
-		Stderr:   string(stderrBuff.Bytes()),
+		Stdout:   stdoutBuff.String(),
+		Stderr:   stderrBuff.String(),
 		ExitCode: exitCode,
 	}, err
 }

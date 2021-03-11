@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/manager"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+
+	"github.com/lcavajani/gojo/pkg/core"
+	"github.com/lcavajani/gojo/pkg/manager"
 )
 
-func Build() *cobra.Command {
+func Build() (*cobra.Command, error) {
 	var command = &cobra.Command{
 		Use:               "build",
 		Short:             "Build a container image",
@@ -17,11 +18,41 @@ func Build() *cobra.Command {
 		PersistentPreRunE: SetGlobalLogLevel,
 	}
 
+	// Buildah
+	command.AddCommand(buildahCommand)
+	if err := AddCommonPersistentFlags(buildahCommand); err != nil {
+		return nil, err
+	}
+	AddCommonBuildFlags(buildahCommand)
+
+	// Buildkit
+	command.AddCommand(buildkitCommand)
+	if err := AddCommonPersistentFlags(buildkitCommand); err != nil {
+		return nil, err
+	}
+	AddCommonBuildFlags(buildkitCommand)
+	AddBuildkitFlags(buildkitCommand)
+
+	// Podman
 	command.AddCommand(podmanCommand)
-	AddCommonPersistentFlags(podmanCommand)
+	if err := AddCommonPersistentFlags(podmanCommand); err != nil {
+		return nil, err
+	}
 	AddCommonBuildFlags(podmanCommand)
 
-	return command
+	return command, nil
+}
+
+var buildkitCommand = &cobra.Command{
+	Use:          string(manager.BuildkitType),
+	RunE:         func(cmd *cobra.Command, args []string) error { return build(cmd, args) },
+	SilenceUsage: true,
+}
+
+var buildahCommand = &cobra.Command{
+	Use:          string(manager.BuildahType),
+	RunE:         func(cmd *cobra.Command, args []string) error { return build(cmd, args) },
+	SilenceUsage: true,
 }
 
 var podmanCommand = &cobra.Command{
@@ -37,7 +68,7 @@ func build(command *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Info().Bool(enabledKey, opt.dryRun).Msg(dryRunFlag)
+	log.Info().Bool(core.EnabledKey, opt.dryRun).Msg(core.DryRunFlag)
 
 	build, err := core.NewBuildFromManifest(opt.buildFilePath)
 	if err != nil {
