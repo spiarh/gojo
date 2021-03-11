@@ -3,10 +3,11 @@ package manager
 import (
 	"fmt"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/execute"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/lcavajani/gojo/pkg/core"
+	"github.com/lcavajani/gojo/pkg/execute"
 )
 
 type Podman struct {
@@ -35,13 +36,13 @@ func NewPodman(push, tagLatest, dryRun bool) (*Podman, error) {
 func (p *Podman) Build(build *core.Build) error {
 	task := p.execTask
 	task.AddArgs("build")
-	task.AddArgs("-t", build.Metadata.String())
+	task.AddArgs("-t", build.Image.String())
 
 	buildArgs := build.GetBuildArgs()
 	for arg, val := range buildArgs {
 		task.AddArgs("--build-arg", fmt.Sprintf("%s=%s", arg, val))
 	}
-	task.AddArgs(build.Metadata.Context)
+	task.AddArgs(build.Image.Context)
 
 	_, err := task.Execute()
 	if err != nil {
@@ -49,14 +50,14 @@ func (p *Podman) Build(build *core.Build) error {
 	}
 
 	if p.tagLatest {
-		err := p.tag(build.Metadata, "latest")
+		err := p.tag(build.Image, "latest")
 		if err != nil {
 			return err
 		}
 	}
 
 	if p.push {
-		err := p.Push(build.Metadata)
+		err := p.Push(build.Image)
 		if err != nil {
 			return err
 		}

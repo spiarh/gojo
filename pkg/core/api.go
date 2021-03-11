@@ -6,8 +6,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/lcavajani/gojo/pkg/util"
 	"gopkg.in/yaml.v2"
+
+	"github.com/lcavajani/gojo/pkg/util"
 )
 
 type Image struct {
@@ -18,6 +19,8 @@ type Image struct {
 	// Tag is the tag of the image.
 	Tag string `yaml:"tag"`
 
+	// ContainerfilePath is the path of the Containerfile.
+	ContainerfilePath string `yaml:"-"`
 	// Context is the context for the build.
 	Context string `yaml:"-"`
 	// Path is the path of the build file.
@@ -112,12 +115,12 @@ type Provider struct {
 }
 
 type Build struct {
-	Metadata *Image     `yaml:"metadata"`
-	Spec     *ImageSpec `yaml:"spec"`
+	Image *Image     `yaml:"image"`
+	Spec  *ImageSpec `yaml:"spec"`
 }
 
 func (b *Build) GetBuildArgs() map[string]string {
-	buildArgs := map[string]string{}
+	buildArgs := make(map[string]string)
 
 	for _, arg := range b.Spec.BuildArgs {
 		for _, fact := range b.Spec.Facts {
@@ -126,7 +129,6 @@ func (b *Build) GetBuildArgs() map[string]string {
 				continue
 			}
 		}
-
 	}
 
 	if b.Spec.FromImage != nil {
@@ -152,7 +154,7 @@ func (b *Build) WriteToFile(path string) error {
 }
 
 func NewBuild(bmage, fromImage string) (*Build, error) {
-	imageMetaObj, err := NewImageFromFQIN(bmage)
+	imageObj, err := NewImageFromFQIN(bmage)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +164,7 @@ func NewBuild(bmage, fromImage string) (*Build, error) {
 	}
 
 	return &Build{
-		Metadata: &imageMetaObj,
+		Image: &imageObj,
 		Spec: &ImageSpec{
 			FromImage: &fromImageObj,
 		},
@@ -187,15 +189,20 @@ func NewBuildFromManifest(manifestPath string) (*Build, error) {
 		return nil, err
 	}
 
-	build.Metadata.Context = path.Dir(manifestPath)
-	build.Metadata.Path = manifestPath
+	if err := build.ValidatePreProcess(); err != nil {
+		return nil, err
+	}
+
+	build.Image.Context = path.Dir(manifestPath)
+	build.Image.ContainerfilePath = path.Join(build.Image.Context, ContainerfileName)
+	build.Image.Path = manifestPath
 
 	return build, nil
 }
 
-func DecodeBuild(bn []byte) (*Build, error) {
+func DecodeBuild(b []byte) (*Build, error) {
 	build := &Build{}
-	if err := yaml.Unmarshal(bn, &build); err != nil {
+	if err := yaml.Unmarshal(b, &build); err != nil {
 		return nil, err
 	}
 	return build, nil
@@ -207,10 +214,18 @@ func EncodeBuild(b *Build) ([]byte, error) {
 
 func (b *Build) ValidatePreProcess() error {
 	// TODO: use field validation kubernetes
-	// TODO: make is more explicit, which field is invalid
+	// TODO: make it more explicit, which field is invalid
 	err := util.EnsureStringSliceDuplicates(b.Spec.BuildArgs)
 	if err != nil {
 		return err
+	}
+
+	if b.Image == nil {
+		return fmt.Errorf("Image definition missing")
+	}
+
+	if b.Spec.FromImage == nil {
+		return fmt.Errorf("FromImage definition missing")
 	}
 
 	numProviders := 0

@@ -7,14 +7,15 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/util"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/lcavajani/gojo/pkg/core"
+	"github.com/lcavajani/gojo/pkg/util"
 )
 
-func Commit() *cobra.Command {
+func Commit() (*cobra.Command, error) {
 	var command = &cobra.Command{
 		Use:               "commit",
 		Short:             "Commit changes from an image directory",
@@ -25,25 +26,31 @@ func Commit() *cobra.Command {
 		PersistentPreRunE: SetGlobalLogLevel,
 	}
 
-	AddCommonPersistentFlags(command)
+	if err := AddCommonPersistentFlags(command); err != nil {
+		return nil, err
+	}
 
-	command.PersistentFlags().StringP(nameFlag, "n", "", "Name of the git commit author")
-	command.PersistentFlags().StringP(emailFlag, "e", "", "Email of the git commit author")
+	command.PersistentFlags().StringP(core.NameFlag, "n", "", "Name of the git commit author")
+	command.PersistentFlags().StringP(core.EmailFlag, "e", "", "Email of the git commit author")
 
-	command.MarkPersistentFlagRequired(nameFlag)
-	command.MarkPersistentFlagRequired(emailFlag)
+	if err := command.MarkPersistentFlagRequired(core.NameFlag); err != nil {
+		return nil, err
+	}
+	if err := command.MarkPersistentFlagRequired(core.EmailFlag); err != nil {
+		return nil, err
+	}
 
-	return command
+	return command, nil
 }
 
 func getGitAuthorInfo(flagSet *pflag.FlagSet) (string, string, error) {
 	var name, email string
 	var err error
 
-	if name, err = flagSet.GetString(nameFlag); err != nil {
+	if name, err = flagSet.GetString(core.NameFlag); err != nil {
 		return name, email, err
 	}
-	if email, err = flagSet.GetString(emailFlag); err != nil {
+	if email, err = flagSet.GetString(core.EmailFlag); err != nil {
 		return name, email, err
 	}
 
@@ -62,10 +69,10 @@ func commit(command *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Info().Bool(enabledKey, opt.dryRun).Msg(dryRunFlag)
+	log.Info().Bool(core.EnabledKey, opt.dryRun).Msg(core.DryRunFlag)
 
 	if _, err := os.Stat(opt.buildFilePath); os.IsNotExist(err) {
-		log.Warn().Str(fileKey, opt.buildFilePath).
+		log.Warn().Str(core.FileKey, opt.buildFilePath).
 			Msg("no build file found")
 		return nil
 	}
@@ -86,7 +93,7 @@ func commit(command *cobra.Command, args []string) error {
 	}
 
 	if status.IsClean() {
-		log.Info().Str(repoKey, opt.imageDir).
+		log.Info().Str(core.RepoKey, opt.imageDir).
 			Msg("nothing to commit, working tree clean")
 		return nil
 	}
@@ -100,20 +107,20 @@ func commit(command *cobra.Command, args []string) error {
 	// it file not in status output, this means it is
 	// by default tracked and unmodified.
 	if _, ok := (status)[buildFileRelPath]; !ok {
-		log.Info().Str(fileKey, buildFileRelPath).
+		log.Info().Str(core.FileKey, buildFileRelPath).
 			Msg("nothing to commit, file is not in status")
 		return nil
 	}
 
 	if unmod := util.GitIsFileClean(status, buildFileRelPath); unmod {
-		log.Info().Str(fileKey, buildFileRelPath).
+		log.Info().Str(core.FileKey, buildFileRelPath).
 			Msg("nothing to commit, file working tree clean")
 		return nil
 	}
 
 	fmt.Println(buildFileRelPath)
 	if unmod := util.GitIsFileUnmodifiedWorktree(status, buildFileRelPath); !unmod {
-		log.Info().Str(fileKey, buildFileRelPath).
+		log.Info().Str(core.FileKey, buildFileRelPath).
 			Msg("add file content to the index")
 		if !opt.dryRun {
 			if _, err := wt.Add(buildFileRelPath); err != nil {
@@ -129,7 +136,7 @@ func commit(command *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		log.Info().Str(msgKey, msg).Msg("create commit message")
+		log.Info().Str(core.MsgKey, msg).Msg("create commit message")
 
 		if !opt.dryRun {
 			commit, err := wt.Commit(msg, &git.CommitOptions{
@@ -142,13 +149,13 @@ func commit(command *cobra.Command, args []string) error {
 			if err != nil {
 				return err
 			}
-			log.Info().Str(hashKey, commit.String()).Msg("")
+			log.Info().Str(core.HashKey, commit.String()).Msg("")
 
 			obj, err := repo.CommitObject(commit)
 			if err != nil {
 				return err
 			}
-			log.Info().Str(commitKey, obj.String()).Msg("")
+			log.Info().Str(core.CommitKey, obj.String()).Msg("")
 
 			log.Info().Msg("push to remote")
 			if err = repo.Push(&git.PushOptions{}); err != nil {
@@ -168,7 +175,7 @@ func newCommitMessage(opt CommonOptions) (string, error) {
 		return msg, err
 	}
 
-	msg = fmt.Sprintf("[gojo] New build file, image=%s, tag=%s", build.Metadata.Name, build.Metadata.Tag)
+	msg = fmt.Sprintf("[gojo] New build file, image=%s, tag=%s", build.Image.Name, build.Image.Tag)
 
 	return msg, nil
 }

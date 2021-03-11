@@ -37,7 +37,7 @@ LABEL maintainer="_me@spiarh.fr"
 COPY --from=builder /go/bin/{{ $source.Repository }} /usr/local/bin/{{ $source.Repository }}
 {{- end }}
 
-RUN apk add --no-cache "{{ .Metadata.Name }}~=${VERSION}"
+RUN apk add --no-cache "{{ .Image.Name }}~=${VERSION}"
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
