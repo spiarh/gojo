@@ -11,6 +11,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/blang/semver/v4"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -88,7 +89,7 @@ func (a *Alpine) getAPKIndexFromArchive(archive io.ReadCloser) ([]byte, error) {
 	return apkIndex, nil
 }
 
-func (a *Alpine) GetLatest() (string, error) {
+func (a *Alpine) GetLatest(semverRange string) (string, error) {
 	apkIndexArchive, err := a.getAPKIndexArchive()
 	if err != nil {
 		return "", err
@@ -104,9 +105,27 @@ func (a *Alpine) GetLatest() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(pkg.version)
+	version := pkg.version
 
-	return pkg.version, nil
+	if semverRange != "" {
+		expectedRange, err := semver.ParseRange(semverRange)
+		if err != nil {
+			return "", err
+		}
+		v, err := semver.Parse(version)
+		if err != nil {
+			return "", err
+		}
+		if !expectedRange(v) {
+			return "", fmt.Errorf("no version found matching semver, version=%s, semver='%s'", version, semverRange)
+		}
+	}
+
+	// TODO: change wording with semver
+	a.log.Info().Str("version", version).
+		Msg("latest version")
+
+	return version, nil
 }
 
 type AlpinePackageMeta struct {

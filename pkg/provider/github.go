@@ -59,19 +59,46 @@ func NewGitHub(owner, repo string, object core.GitHubObject) *GitHub {
 	}
 }
 
-func (g *GitHub) GetLatest() (string, error) {
+func (g *GitHub) GetLatest(semverRange string) (string, error) {
 	g.log.Info().Msg("get latest version")
 	v, err := g.GetAll()
 	if err != nil {
 		return "", err
 	}
 
-	// TODO: add unstable & semver
 	if len(v.stable) == 0 {
-		return "", fmt.Errorf("no stable version found")
+		return "", fmt.Errorf("no stable versions found")
 	}
 
-	return v.stable[0], nil
+	var version string
+	if semverRange == "" {
+		version = v.stable[0]
+	}
+	if semverRange != "" {
+		expectedRange, err := semver.ParseRange(semverRange)
+		if err != nil {
+			return "", err
+		}
+
+		for _, ver := range v.stable {
+			v, err := semver.Parse(util.SanitizeVersion(ver))
+			if err != nil {
+				return "", err
+			}
+			if expectedRange(v) {
+				version = ver
+				break
+			}
+		}
+	}
+	if version == "" {
+		return "", fmt.Errorf("no version found matching semver, semver='%s'", semverRange)
+	}
+
+	g.log.Info().Str("version", version).
+		Msg("latest version")
+
+	return version, nil
 }
 
 func (g *GitHub) GetAll() (*Versions, error) {
