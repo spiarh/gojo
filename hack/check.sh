@@ -38,6 +38,9 @@ if [[ "$unformatted_files" ]]; then
   exit 1
 fi
 
+echo ">>> Executing goconst"
+goconst cmd/ pkg/
+
 echo ">>> Executing shellcheck"
 shellcheck hack/*.sh
 
