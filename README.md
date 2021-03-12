@@ -23,4 +23,3 @@ TODO:
 
 - [ ] Add Kaniko image manager
 - [ ] Log digest in outputs when build
-- [ ] Add Semantic versionning

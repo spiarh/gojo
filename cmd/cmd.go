@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/manager"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/lcavajani/gojo/pkg/core"
+	"github.com/lcavajani/gojo/pkg/manager"
 )
 
 // AddCommonPersistentFlags adds some common flags to a cobra command.

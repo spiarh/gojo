@@ -13,7 +13,7 @@ const (
 )
 
 type provider interface {
-	GetLatest() (string, error)
+	GetLatest(semverRange string) (string, error)
 }
 
 var _ provider = &Alpine{}

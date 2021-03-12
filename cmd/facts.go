@@ -97,7 +97,7 @@ func setFacts(flagSet *pflag.FlagSet, facts []*core.Fact, sources []core.Source)
 					return err
 				}
 
-				if fact.Value, err = repo.GetLatest(); err != nil {
+				if fact.Value, err = repo.GetLatest(fact.Semver); err != nil {
 					return err
 				}
 

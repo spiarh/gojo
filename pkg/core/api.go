@@ -8,6 +8,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/blang/semver/v4"
 	"github.com/lcavajani/gojo/pkg/util"
 )
 
@@ -76,8 +77,8 @@ type Fact struct {
 	Value  string `yaml:"value"`
 	Source string `yaml:"source,omitempty"`
 	// TODO: Set default, can't be empty ?
-	Kind FactKind `yaml:"kind"`
-	// Semver  string  `yaml:"semver,omitempty"`
+	Kind   FactKind `yaml:"kind"`
+	Semver string   `yaml:"semver,omitempty"`
 }
 
 type FactKind string
@@ -260,6 +261,14 @@ func (b *Build) ValidatePreProcess() error {
 		}
 		if !found {
 			return fmt.Errorf("Source not found: %s", fact.Source)
+		}
+		if fact.Kind != VersionFactKind && fact.Semver != "" {
+			return fmt.Errorf("SemVer specified for non version fact kind")
+		}
+		if fact.Kind == VersionFactKind && fact.Semver != "" {
+			if _, err := semver.ParseRange(fact.Semver); err != nil {
+				return err
+			}
 		}
 	}
 
