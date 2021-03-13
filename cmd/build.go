@@ -90,7 +90,7 @@ func build(command *cobra.Command, args []string) error {
 	build.Image.Containerfile = opt.containerFileName
 
 	if err := build.Validate(); err != nil {
-		log.Fatal().AnErr("err", err).Msg("")
+		log.Fatal().AnErr(core.ErrKey, err).Msg("")
 	}
 
 	mgrType := command.Use

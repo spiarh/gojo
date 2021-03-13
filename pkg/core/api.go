@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/blang/semver/v4"
+
 	"github.com/lcavajani/gojo/pkg/util"
 )
 
