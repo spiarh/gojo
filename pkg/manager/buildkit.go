@@ -60,7 +60,7 @@ func (b *Buildkit) Build(build *core.Build) error {
 
 	task.AddArgs("--frontend", "dockerfile.v0")
 	// TODO: parametrize ?
-	task.AddArgs("--opt", "filename="+core.ContainerfileName)
+	task.AddArgs("--opt", "filename="+build.Image.Containerfile)
 	task.AddArgs("--local", "context="+build.Image.Context)
 	task.AddArgs("--local", "dockerfile="+build.Image.Context)
 

@@ -67,7 +67,7 @@ func facts(command *cobra.Command, args []string) error {
 	}
 
 	if err := build.ValidatePreProcess(); err != nil {
-		log.Fatal().AnErr("err", err).Msg("build manifest validation")
+		log.Fatal().AnErr("err", err).Msg("")
 	}
 
 	if err = setFacts(flagSet, build.Spec.Facts, build.Spec.Sources); err != nil {
@@ -82,7 +82,7 @@ func facts(command *cobra.Command, args []string) error {
 		return nil
 	}
 
-	return build.WriteToFile(build.Image.Path)
+	return build.WriteToFile(build.Image.BuildfilePath)
 }
 
 func setFacts(flagSet *pflag.FlagSet, facts []*core.Fact, sources []core.Source) error {

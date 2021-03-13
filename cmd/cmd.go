@@ -14,7 +14,8 @@ import (
 // AddCommonPersistentFlags adds some common flags to a cobra command.
 func AddCommonPersistentFlags(command *cobra.Command) error {
 	command.PersistentFlags().Bool(core.DryRunFlag, false, "Do not write files nor execute commands")
-	command.PersistentFlags().StringP(core.BuildFileFlag, "f", core.BuildFileName, "Name of the buildfile")
+	command.PersistentFlags().StringP(core.ContainerfileFlag, "c", core.ContainerfileFlag, "Name of the Containerfile")
+	command.PersistentFlags().StringP(core.BuildfileFlag, "f", core.BuildFileName, "Name of the buildfile")
 	command.PersistentFlags().StringP(core.ImageFlag, "i", "", "Name of the image as in the images directory name")
 	command.PersistentFlags().StringP(core.ImagesDirFlag, "d", "", "Path to the container images directory")
 	command.PersistentFlags().StringP(core.LogLevelFlag, "l", core.DefaultLogLevel, "Log level {debug,info,warn,error}")
@@ -68,9 +69,10 @@ func SetGlobalLogLevel(cmd *cobra.Command, args []string) error {
 }
 
 type CommonOptions struct {
-	imagesDir, imageDir, imageName string
-	buildFileName, buildFilePath   string
-	dryRun                         bool
+	imagesDir, imageDir, imageName       string
+	buildFileName, buildFilePath         string
+	containerFileName, containerFilePath string
+	dryRun                               bool
 }
 
 func getOptions(flagSet *pflag.FlagSet) (CommonOptions, error) {
@@ -85,10 +87,15 @@ func getOptions(flagSet *pflag.FlagSet) (CommonOptions, error) {
 	}
 	opt.imageDir = path.Join(opt.imagesDir, opt.imageName)
 
-	if opt.buildFileName, err = flagSet.GetString(core.BuildFileFlag); err != nil {
+	if opt.buildFileName, err = flagSet.GetString(core.BuildfileFlag); err != nil {
 		return opt, err
 	}
 	opt.buildFilePath = path.Join(opt.imageDir, opt.buildFileName)
+
+	if opt.containerFileName, err = flagSet.GetString(core.ContainerfileFlag); err != nil {
+		return opt, err
+	}
+	opt.containerFilePath = path.Join(opt.imageDir, opt.containerFileName)
 
 	if opt.dryRun, err = flagSet.GetBool(core.DryRunFlag); err != nil {
 		return opt, err
