@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -129,8 +128,8 @@ func scaffoldProject(command *cobra.Command, args []string) error {
 	if err := build.WriteToFile(opt.buildFilePath); err != nil {
 		return err
 	}
-	ctnFilePath := path.Join(opt.imageDir, core.ContainerfileName)
-	if err := containerfile.WriteToFile(ctnFilePath); err != nil {
+
+	if err := containerfile.WriteToFile(opt.containerFilePath); err != nil {
 		return err
 	}
 

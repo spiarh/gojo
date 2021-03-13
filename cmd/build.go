@@ -40,6 +40,13 @@ func Build() (*cobra.Command, error) {
 	}
 	AddCommonBuildFlags(podmanCommand)
 
+	// Podman
+	command.AddCommand(kanikoCommand)
+	if err := AddCommonPersistentFlags(kanikoCommand); err != nil {
+		return nil, err
+	}
+	AddCommonBuildFlags(kanikoCommand)
+
 	return command, nil
 }
 
@@ -51,6 +58,12 @@ var buildkitCommand = &cobra.Command{
 
 var buildahCommand = &cobra.Command{
 	Use:          string(manager.BuildahType),
+	RunE:         func(cmd *cobra.Command, args []string) error { return build(cmd, args) },
+	SilenceUsage: true,
+}
+
+var kanikoCommand = &cobra.Command{
+	Use:          string(manager.KanikoType),
 	RunE:         func(cmd *cobra.Command, args []string) error { return build(cmd, args) },
 	SilenceUsage: true,
 }
@@ -76,7 +89,7 @@ func build(command *cobra.Command, args []string) error {
 	}
 
 	if err := build.Validate(); err != nil {
-		log.Fatal().AnErr("err", err).Msg("build manifest validation")
+		log.Fatal().AnErr("err", err).Msg("")
 	}
 
 	mgrType := command.Use
