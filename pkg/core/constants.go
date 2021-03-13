@@ -55,7 +55,7 @@ const (
 
 // Keys
 const (
-	// ContentKey        = "content"
+	ErrKey     = "err"
 	RepoKey    = "repo"
 	FileKey    = "file"
 	NameKey    = "name"

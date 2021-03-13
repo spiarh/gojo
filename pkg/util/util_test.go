@@ -14,7 +14,7 @@ func TestConfig(t *testing.T) {
 	RunSpecs(t, "util Test Suite")
 }
 
-var _ = Describe("image name parsing", func() {
+var _ = Describe("fqin parsing", func() {
 	It("should parse valid image names", func() {
 		tests := []struct {
 			fullName, registry, name, tag string
@@ -26,14 +26,14 @@ var _ = Describe("image name parsing", func() {
 		}
 
 		for _, tt := range tests {
-			reg, name, tag, err := util.ParseImageFullName(tt.fullName)
+			reg, name, tag, err := util.ParseFQIN(tt.fullName)
 			Expect(err).To(BeNil())
 			Expect(reg).To(Equal(tt.registry))
 			Expect(name).To(Equal(tt.name))
 			Expect(tag).To(Equal(tt.tag))
 		}
 	})
-	It("should fails with invalid image name", func() {
+	It("should fails with invalid fqin", func() {
 		tests := []string{
 			"name",
 			"name:tag",
@@ -41,7 +41,7 @@ var _ = Describe("image name parsing", func() {
 			"reg$$%istry.fqdn/project",
 		}
 		for _, tt := range tests {
-			_, _, _, err := util.ParseImageFullName(tt)
+			_, _, _, err := util.ParseFQIN(tt)
 			Expect(err).To(HaveOccurred())
 		}
 	})

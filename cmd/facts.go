@@ -67,11 +67,11 @@ func facts(command *cobra.Command, args []string) error {
 	}
 
 	if err := build.ValidatePreProcess(); err != nil {
-		log.Fatal().AnErr("err", err).Msg("")
+		log.Fatal().AnErr(core.ErrKey, err).Msg("")
 	}
 
 	if err = setFacts(flagSet, build.Spec.Facts, build.Spec.Sources); err != nil {
-		log.Fatal().AnErr("err", err).Msg("retrieve facts")
+		log.Fatal().AnErr(core.ErrKey, err).Msg("retrieve facts")
 	}
 
 	if build.Image.Tag, err = core.BuildTag(build.Spec.Facts, build.Spec.TagFormat, build.Image.Context); err != nil {
