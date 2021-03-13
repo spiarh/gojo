@@ -18,14 +18,14 @@ type Buildah struct {
 	tagLatest bool
 }
 
-func NewBuildah(push, tagLatest, dryRun bool) (*Buildah, error) {
+func NewBuildah(push, tagLatest, dryRun, streamStdio bool) (*Buildah, error) {
 	logger := log.With().Str("manager", string(BuildahType)).Logger()
 	return &Buildah{
 		log: logger,
 		execTask: execute.ExecTask{
 			Log:         logger,
 			Command:     "buildah",
-			StreamStdio: true,
+			StreamStdio: streamStdio,
 			DryRun:      dryRun,
 		},
 		push:      push,

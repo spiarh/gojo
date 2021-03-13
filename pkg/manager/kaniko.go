@@ -18,14 +18,14 @@ type Kaniko struct {
 	tagLatest bool
 }
 
-func NewKaniko(push, tagLatest, dryRun bool) (*Kaniko, error) {
+func NewKaniko(push, tagLatest, dryRun, streamStdio bool) (*Kaniko, error) {
 	logger := log.With().Str("manager", string(KanikoType)).Logger()
 	return &Kaniko{
 		log: logger,
 		execTask: execute.ExecTask{
 			Log:         logger,
 			Command:     "/kaniko/executor",
-			StreamStdio: true,
+			StreamStdio: streamStdio,
 			DryRun:      dryRun,
 		},
 		push:      push,

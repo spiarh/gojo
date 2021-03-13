@@ -96,7 +96,8 @@ func (g *GitHub) GetLatest(semverRange string) (string, error) {
 	}
 
 	g.log.Info().Str("version", version).
-		Msg("latest version")
+		Str("semver", semverRange).
+		Msg("version found")
 
 	return version, nil
 }

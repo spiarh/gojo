@@ -121,9 +121,9 @@ func (a *Alpine) GetLatest(semverRange string) (string, error) {
 		}
 	}
 
-	// TODO: change wording with semver
 	a.log.Info().Str("version", version).
-		Msg("latest version")
+		Str("semver", semverRange).
+		Msg("version found")
 
 	return version, nil
 }
