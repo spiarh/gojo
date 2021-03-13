@@ -19,12 +19,12 @@ type Image struct {
 	// Tag is the tag of the image.
 	Tag string `yaml:"tag"`
 
-	// ContainerfilePath is the path of the Containerfile.
-	ContainerfilePath string `yaml:"-"`
+	// Containerfile is the name of the Containerfile.
+	Containerfile string `yaml:"-"`
 	// Context is the context for the build.
 	Context string `yaml:"-"`
-	// Path is the path of the build file.
-	Path string `yaml:"-"`
+	// BuildfilePath is the path of the build file.
+	BuildfilePath string `yaml:"-"`
 }
 
 func NewImageFromFQIN(fqin string) (Image, error) {
@@ -194,8 +194,8 @@ func NewBuildFromManifest(manifestPath string) (*Build, error) {
 	}
 
 	build.Image.Context = path.Dir(manifestPath)
-	build.Image.ContainerfilePath = path.Join(build.Image.Context, ContainerfileName)
-	build.Image.Path = manifestPath
+	build.Image.Containerfile = ContainerfileName
+	build.Image.BuildfilePath = manifestPath
 
 	return build, nil
 }

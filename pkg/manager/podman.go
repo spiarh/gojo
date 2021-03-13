@@ -43,6 +43,7 @@ func (p *Podman) Build(build *core.Build) error {
 		task.AddArgs("--build-arg", fmt.Sprintf("%s=%s", arg, val))
 	}
 	task.AddArgs(build.Image.Context)
+	task.AddArgs("-f", build.Image.Containerfile)
 
 	_, err := task.Execute()
 	if err != nil {
