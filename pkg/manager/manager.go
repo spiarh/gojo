@@ -46,14 +46,18 @@ func New(flagSet *pflag.FlagSet, mgrType string) (manager, error) {
 			return nil, err
 		}
 		return b, nil
-	case string(KanikoType):
-		fmt.Println("NOT IMPLEMENTED")
 	case string(PodmanType):
 		p, err := NewPodman(push, tagLatest, dryRun)
 		if err != nil {
 			return nil, err
 		}
 		return p, nil
+	case string(KanikoType):
+		k, err := NewKaniko(push, tagLatest, dryRun)
+		if err != nil {
+			return nil, err
+		}
+		return k, nil
 	}
 
 	return nil, fmt.Errorf("Manager type not recognized: %s", mgrType)

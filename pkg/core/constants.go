@@ -13,11 +13,12 @@ const (
 
 // Flags
 const (
-	DryRunFlag    = "dry-run"
-	BuildFileFlag = "build-file"
-	ImageFlag     = "image"
-	ImagesDirFlag = "images-dir"
-	LogLevelFlag  = "log-level"
+	DryRunFlag        = "dry-run"
+	ContainerfileFlag = "containerfile"
+	BuildfileFlag     = "buildfile"
+	ImageFlag         = "image"
+	ImagesDirFlag     = "images-dir"
+	LogLevelFlag      = "log-level"
 
 	ImageFQINFlag        = "image-fqin"
 	FromImageFlag        = "from-image"
