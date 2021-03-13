@@ -22,18 +22,17 @@ func IsTTYAllocated() bool {
 	return false
 }
 
-// TODO: Rename fot ParseFQIN
-func ParseImageFullName(image string) (string, string, string, error) {
+func ParseFQIN(fqin string) (string, string, string, error) {
 	var registry, name, tag string
-	var errMsg = fmt.Errorf("invalid image name: %s", image)
+	var errMsg = fmt.Errorf("invalid image name: %s", fqin)
 
-	_, err := url.Parse(image)
+	_, err := url.Parse(fqin)
 	if err != nil {
 		return registry, name, tag, errors.Wrapf(err, errMsg.Error())
 	}
 
 	// Get tag first with ":" separator
-	repo_tag := strings.Split(image, ":")
+	repo_tag := strings.Split(fqin, ":")
 	if len(repo_tag) == 1 {
 		return registry, name, tag, errMsg
 	}

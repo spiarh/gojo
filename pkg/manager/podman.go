@@ -18,14 +18,15 @@ type Podman struct {
 	tagLatest bool
 }
 
-func NewPodman(push, tagLatest, dryRun bool) (*Podman, error) {
+func NewPodman(push, tagLatest, dryRun, streamStdio bool) (*Podman, error) {
 	logger := log.With().Str("manager", string(PodmanType)).Logger()
+
 	return &Podman{
 		log: logger,
 		execTask: execute.ExecTask{
 			Log:         logger,
 			Command:     "podman",
-			StreamStdio: true,
+			StreamStdio: streamStdio,
 			DryRun:      dryRun,
 		},
 		push:      push,

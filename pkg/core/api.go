@@ -30,7 +30,7 @@ type Image struct {
 
 func NewImageFromFQIN(fqin string) (Image, error) {
 	var image = Image{}
-	registry, name, tag, err := util.ParseImageFullName(fqin)
+	registry, name, tag, err := util.ParseFQIN(fqin)
 	if err != nil {
 		return image, err
 	}
@@ -64,19 +64,17 @@ type AlpineSource struct {
 }
 
 type GitHubSource struct {
-	Owner      string `yaml:"owner"`
-	Repository string `yaml:"repository"`
-	// TODO: Rename, Kind?
-	Object GitHubObject `yaml:"object"`
+	Owner      string       `yaml:"owner"`
+	Repository string       `yaml:"repository"`
+	Object     GitHubObject `yaml:"object"`
 }
 
 type BuildArgs []string
 
 type Fact struct {
-	Name   string `yaml:"name"`
-	Value  string `yaml:"value"`
-	Source string `yaml:"source,omitempty"`
-	// TODO: Set default, can't be empty ?
+	Name   string   `yaml:"name"`
+	Value  string   `yaml:"value"`
+	Source string   `yaml:"source,omitempty"`
 	Kind   FactKind `yaml:"kind"`
 	Semver string   `yaml:"semver,omitempty"`
 }
@@ -105,8 +103,7 @@ type ImageSpec struct {
 }
 
 type Source struct {
-	Name string `yaml:"name"`
-	// TODO: Make sure only one is defined
+	Name     string `yaml:"name"`
 	Provider `yaml:",inline"`
 }
 
@@ -195,7 +192,6 @@ func NewBuildFromManifest(manifestPath string) (*Build, error) {
 	}
 
 	build.Image.Context = path.Dir(manifestPath)
-	build.Image.Containerfile = ContainerfileName
 	build.Image.BuildfilePath = manifestPath
 
 	return build, nil
@@ -214,8 +210,6 @@ func EncodeBuild(b *Build) ([]byte, error) {
 }
 
 func (b *Build) ValidatePreProcess() error {
-	// TODO: use field validation kubernetes
-	// TODO: make it more explicit, which field is invalid
 	err := util.EnsureStringSliceDuplicates(b.Spec.BuildArgs)
 	if err != nil {
 		return err

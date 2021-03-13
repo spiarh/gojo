@@ -5,6 +5,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/pflag"
 
 	"github.com/lcavajani/gojo/pkg/core"
 	"github.com/lcavajani/gojo/pkg/execute"
@@ -28,13 +29,12 @@ type BuildKitOptions struct {
 	tlsDir        string
 }
 
-func NewBuildkit(push, tagLatest, dryRun bool, opt *BuildKitOptions) (*Buildkit, error) {
+func NewBuildkit(push, tagLatest, dryRun, streamStdio bool, opt *BuildKitOptions) (*Buildkit, error) {
 	logger := log.With().Str("manager", string(BuildkitType)).Logger()
 	task := execute.ExecTask{
-		Log:     logger,
-		Command: "buildctl",
-		// TODO: Parametrize
-		StreamStdio: true,
+		Log:         logger,
+		Command:     "buildctl",
+		StreamStdio: streamStdio,
 		DryRun:      dryRun,
 	}
 
@@ -59,7 +59,6 @@ func (b *Buildkit) Build(build *core.Build) error {
 	task.AddArgs("build")
 
 	task.AddArgs("--frontend", "dockerfile.v0")
-	// TODO: parametrize ?
 	task.AddArgs("--opt", "filename="+build.Image.Containerfile)
 	task.AddArgs("--local", "context="+build.Image.Context)
 	task.AddArgs("--local", "dockerfile="+build.Image.Context)
@@ -88,4 +87,31 @@ func (b *Buildkit) Build(build *core.Build) error {
 	}
 
 	return nil
+}
+
+func getBuildkitOptions(flagSet *pflag.FlagSet) (*BuildKitOptions, error) {
+	var err error
+	opt := &BuildKitOptions{}
+	if opt.frontend, err = flagSet.GetString(core.FrontendFlag); err != nil {
+		return nil, err
+	}
+	if opt.addr, err = flagSet.GetString(core.AddrFlag); err != nil {
+		return nil, err
+	}
+	if opt.tlsServerName, err = flagSet.GetString(core.TLSServerNameFlag); err != nil {
+		return nil, err
+	}
+	if opt.tlsCaCert, err = flagSet.GetString(core.TLSCaCertFlag); err != nil {
+		return nil, err
+	}
+	if opt.tlsCert, err = flagSet.GetString(core.TLSCertFlag); err != nil {
+		return nil, err
+	}
+	if opt.tlsKey, err = flagSet.GetString(core.TLSKeyFlag); err != nil {
+		return nil, err
+	}
+	if opt.tlsDir, err = flagSet.GetString(core.TLSDirFlag); err != nil {
+		return nil, err
+	}
+	return opt, nil
 }

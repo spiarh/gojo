@@ -18,8 +18,3 @@ Flags:
 
 Use "gojo [command] --help" for more information about a command.
 ```
-
-TODO:
-
-- [ ] Add Kaniko image manager
-- [ ] Log digest in outputs when build

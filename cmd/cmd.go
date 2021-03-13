@@ -15,7 +15,7 @@ import (
 // AddCommonPersistentFlags adds some common flags to a cobra command.
 func AddCommonPersistentFlags(command *cobra.Command) error {
 	command.PersistentFlags().Bool(core.DryRunFlag, false, "Do not write files nor execute commands")
-	command.PersistentFlags().StringP(core.ContainerfileFlag, "c", core.ContainerfileFlag, "Name of the Containerfile")
+	command.PersistentFlags().StringP(core.ContainerfileFlag, "c", core.ContainerfileName, "Name of the Containerfile")
 	command.PersistentFlags().StringP(core.BuildfileFlag, "f", core.BuildFileName, "Name of the buildfile")
 	command.PersistentFlags().StringP(core.ImageFlag, "i", "", "Name of the image as in the images directory name")
 	command.PersistentFlags().StringP(core.ImagesDirFlag, "d", "", "Path to the container images directory")
