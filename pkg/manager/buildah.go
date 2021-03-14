@@ -42,8 +42,8 @@ func (b *Buildah) Build(build *core.Build) error {
 	for arg, val := range buildArgs {
 		task.AddArgs("--build-arg", fmt.Sprintf("%s=%s", arg, val))
 	}
-	task.AddArgs(build.Image.Context)
 	task.AddArgs("-f", build.Image.Containerfile)
+	task.AddArgs(build.Image.Context)
 
 	_, err := task.Execute()
 	if err != nil {
