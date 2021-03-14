@@ -88,7 +88,7 @@ func scaffoldProject(command *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		build.Spec.FromImageBuilder = &fromImageBuilderMeta
+		build.Spec.FromImages = append(build.Spec.FromImages, core.FromImage{Image: fromImageBuilderMeta})
 	}
 
 	switch providerType {
