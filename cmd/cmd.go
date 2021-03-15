@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"path"
+	"path/filepath"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
@@ -18,13 +19,10 @@ func AddCommonPersistentFlags(command *cobra.Command) error {
 	command.PersistentFlags().StringP(core.ContainerfileFlag, "c", core.ContainerfileName, "Name of the Containerfile")
 	command.PersistentFlags().StringP(core.BuildfileFlag, "f", core.BuildFileName, "Name of the buildfile")
 	command.PersistentFlags().StringP(core.ImageFlag, "i", "", "Name of the image as in the images directory name")
-	command.PersistentFlags().StringP(core.ImagesDirFlag, "d", "", "Path to the container images directory")
+	command.PersistentFlags().StringP(core.ImagesDirFlag, "d", "./", "Path to the container images directory")
 	command.PersistentFlags().StringP(core.LogLevelFlag, "l", core.DefaultLogLevel, "Log level {debug,info,warn,error}")
 
 	if err := command.MarkPersistentFlagRequired(core.ImageFlag); err != nil {
-		return err
-	}
-	if err := command.MarkPersistentFlagRequired(core.ImagesDirFlag); err != nil {
 		return err
 	}
 	return nil
@@ -85,6 +83,9 @@ func getOptions(flagSet *pflag.FlagSet) (CommonOptions, error) {
 	}
 	if opt.imagesDir, err = flagSet.GetString(core.ImagesDirFlag); err != nil {
 		return opt, err
+	}
+	if opt.imageDir, err = filepath.Abs(filepath.Dir(opt.imagesDir)); err != nil {
+		opt.imageDir = path.Join(opt.imagesDir, opt.imageName)
 	}
 	opt.imageDir = path.Join(opt.imagesDir, opt.imageName)
 
