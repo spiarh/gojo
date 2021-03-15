@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 type ExecTask struct {
@@ -55,7 +54,7 @@ func (et *ExecTask) String() string {
 }
 
 func (et *ExecTask) Print() {
-	log.Info().Str("cmd", et.String()).
+	et.Log.Info().Str("cmd", et.String()).
 		Msg("execute command")
 }
 
@@ -110,9 +109,18 @@ func (et *ExecTask) Execute() (ExecResult, error) {
 		}
 	}
 
-	return ExecResult{
+	execResult := ExecResult{
 		Stdout:   stdoutBuff.String(),
 		Stderr:   stderrBuff.String(),
 		ExitCode: exitCode,
-	}, err
+	}
+
+	if !et.StreamStdio {
+		et.Log.Info().Int("exit-code", execResult.ExitCode).
+			Str("stdout", execResult.Stdout).
+			Str("stderr", execResult.Stderr).
+			Msg("cmd result")
+	}
+
+	return execResult, err
 }
