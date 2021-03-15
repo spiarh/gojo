@@ -48,8 +48,7 @@ func (k *Kaniko) Build(build *core.Build) error {
 		task.AddArgs("--destination", build.Image.StringWithTagLatest())
 	}
 
-	_, err := task.Execute()
-	if err != nil {
+	if _, err := task.Execute(); err != nil {
 		return err
 	}
 

@@ -71,8 +71,7 @@ func (b *Buildkit) Build(build *core.Build) error {
 	task.AddArgs("--output",
 		fmt.Sprintf("type=image,name=%s,push=%t", build.Image.String(), b.push))
 
-	_, err := task.Execute()
-	if err != nil {
+	if _, err := task.Execute(); err != nil {
 		return err
 	}
 
@@ -80,8 +79,7 @@ func (b *Buildkit) Build(build *core.Build) error {
 		// rerun with a new tag
 		task.Args = task.Args[:len(task.Args)-1]
 		task.AddArgs(fmt.Sprintf("type=image,name=%s,push=%t", build.Image.StringWithTagLatest(), b.push))
-		_, err := task.Execute()
-		if err != nil {
+		if _, err := task.Execute(); err != nil {
 			return err
 		}
 	}

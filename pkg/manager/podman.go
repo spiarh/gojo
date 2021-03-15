@@ -37,7 +37,11 @@ func NewPodman(push, tagLatest, dryRun, streamStdio bool) (*Podman, error) {
 func (p *Podman) Build(build *core.Build) error {
 	task := p.execTask
 	task.AddArgs("build")
+
 	task.AddArgs("-t", build.Image.String())
+	if p.tagLatest {
+		task.AddArgs("-t", build.Image.StringWithTagLatest())
+	}
 
 	buildArgs := build.GetBuildArgs()
 	for arg, val := range buildArgs {
@@ -46,36 +50,14 @@ func (p *Podman) Build(build *core.Build) error {
 	task.AddArgs("-f", build.Image.Containerfile)
 	task.AddArgs(build.Image.Context)
 
-	_, err := task.Execute()
-	if err != nil {
+	if _, err := task.Execute(); err != nil {
 		return err
-	}
-
-	if p.tagLatest {
-		err := p.tag(build.Image, "latest")
-		if err != nil {
-			return err
-		}
 	}
 
 	if p.push {
-		err := p.Push(build.Image)
-		if err != nil {
+		if err := p.Push(build.Image); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (p *Podman) tag(image *core.Image, tag string) error {
-	task := p.execTask
-	task.AddArgs("tag")
-	task.AddArgs(image.String(), image.StringWithTag(tag))
-
-	_, err := task.Execute()
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -86,15 +68,13 @@ func (p *Podman) Push(image *core.Image) error {
 	task.AddArgs("push")
 	task.AddArgs(image.String())
 
-	_, err := task.Execute()
-	if err != nil {
+	if _, err := task.Execute(); err != nil {
 		return err
 	}
 
 	if p.tagLatest {
 		task.Args[len(task.Args)-1] = image.StringWithTagLatest()
-		_, err := task.Execute()
-		if err != nil {
+		if _, err := task.Execute(); err != nil {
 			return err
 		}
 	}

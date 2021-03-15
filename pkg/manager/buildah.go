@@ -36,7 +36,11 @@ func NewBuildah(push, tagLatest, dryRun, streamStdio bool) (*Buildah, error) {
 func (b *Buildah) Build(build *core.Build) error {
 	task := b.execTask
 	task.AddArgs("bud")
+
 	task.AddArgs("-t", build.Image.String())
+	if b.tagLatest {
+		task.AddArgs("-t", build.Image.StringWithTagLatest())
+	}
 
 	buildArgs := build.GetBuildArgs()
 	for arg, val := range buildArgs {
@@ -45,36 +49,14 @@ func (b *Buildah) Build(build *core.Build) error {
 	task.AddArgs("-f", build.Image.Containerfile)
 	task.AddArgs(build.Image.Context)
 
-	_, err := task.Execute()
-	if err != nil {
+	if _, err := task.Execute(); err != nil {
 		return err
-	}
-
-	if b.tagLatest {
-		err := b.tag(build.Image, "latest")
-		if err != nil {
-			return err
-		}
 	}
 
 	if b.push {
-		err := b.Push(build.Image)
-		if err != nil {
+		if err := b.Push(build.Image); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (b *Buildah) tag(image *core.Image, tag string) error {
-	task := b.execTask
-	task.AddArgs("tag")
-	task.AddArgs(image.String(), image.StringWithTag(tag))
-
-	_, err := task.Execute()
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -85,15 +67,13 @@ func (b *Buildah) Push(image *core.Image) error {
 	task.AddArgs("push")
 	task.AddArgs(image.String())
 
-	_, err := task.Execute()
-	if err != nil {
+	if _, err := task.Execute(); err != nil {
 		return err
 	}
 
 	if b.tagLatest {
 		task.Args[len(task.Args)-1] = image.StringWithTagLatest()
-		_, err := task.Execute()
-		if err != nil {
+		if _, err := task.Execute(); err != nil {
 			return err
 		}
 	}
