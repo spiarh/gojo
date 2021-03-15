@@ -79,7 +79,7 @@ func (b *Buildkit) Build(build *core.Build) error {
 	if b.tagLatest {
 		// rerun with a new tag
 		task.Args = task.Args[:len(task.Args)-1]
-		task.AddArgs(fmt.Sprintf("type=image,name=%s,push=%t", build.Image.StringWithTag("latest"), b.push))
+		task.AddArgs(fmt.Sprintf("type=image,name=%s,push=%t", build.Image.StringWithTagLatest(), b.push))
 		_, err := task.Execute()
 		if err != nil {
 			return err

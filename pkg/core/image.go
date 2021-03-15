@@ -32,3 +32,7 @@ func (b *Image) String() string {
 func (b *Image) StringWithTag(tag string) string {
 	return fmt.Sprintf("%s/%s:%s", b.Registry, b.Name, tag)
 }
+
+func (b *Image) StringWithTagLatest() string {
+	return fmt.Sprintf("%s/%s:%s", b.Registry, b.Name, "latest")
+}

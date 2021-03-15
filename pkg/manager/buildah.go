@@ -91,7 +91,7 @@ func (b *Buildah) Push(image *core.Image) error {
 	}
 
 	if b.tagLatest {
-		task.Args[len(task.Args)-1] = image.StringWithTag("latest")
+		task.Args[len(task.Args)-1] = image.StringWithTagLatest()
 		_, err := task.Execute()
 		if err != nil {
 			return err

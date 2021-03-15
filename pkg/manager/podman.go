@@ -92,7 +92,7 @@ func (p *Podman) Push(image *core.Image) error {
 	}
 
 	if p.tagLatest {
-		task.Args[len(task.Args)-1] = image.StringWithTag("latest")
+		task.Args[len(task.Args)-1] = image.StringWithTagLatest()
 		_, err := task.Execute()
 		if err != nil {
 			return err
