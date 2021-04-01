@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/lcavajani/gojo/pkg/core"
+	"github.com/spiarh/gojo/pkg/core"
 )
 
 const (

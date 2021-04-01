@@ -16,7 +16,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 const (

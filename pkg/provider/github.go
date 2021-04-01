@@ -13,8 +13,8 @@ import (
 	"github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/core"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 const (

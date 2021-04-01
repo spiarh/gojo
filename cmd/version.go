@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/lcavajani/gojo/pkg/version"
+	"github.com/spiarh/gojo/pkg/version"
 )
 
 func Version() *cobra.Command {

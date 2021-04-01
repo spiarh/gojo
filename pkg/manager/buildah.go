@@ -6,8 +6,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/execute"
+	"github.com/spiarh/gojo/pkg/core"
+	"github.com/spiarh/gojo/pkg/execute"
 )
 
 type Buildah struct {

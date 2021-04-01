@@ -4,8 +4,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/manager"
+	"github.com/spiarh/gojo/pkg/core"
+	"github.com/spiarh/gojo/pkg/manager"
 )
 
 func Build() (*cobra.Command, error) {

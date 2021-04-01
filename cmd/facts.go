@@ -5,9 +5,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/provider"
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/core"
+	"github.com/spiarh/gojo/pkg/provider"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 func Facts() (*cobra.Command, error) {

@@ -25,7 +25,7 @@ echo ">>> $GO_ACTION $EFFECTIVE_VERSION"
 
 CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) GO111MODULE=on \
   go "$GO_ACTION" -mod=vendor \
-  -ldflags "-X github.com/lcavajani/gojo/pkg/version.GitVersion=$EFFECTIVE_VERSION \
-            -X github.com/lcavajani/gojo/pkg/version.gitTreeState=$TREE_STATE \
-            -X github.com/lcavajani/gojo/pkg/version.gitCommit=$(git rev-parse --verify HEAD) \
-            -X github.com/lcavajani/gojo/pkg/version.buildDate=$(date --rfc-3339=seconds | sed 's/ /T/')"
+  -ldflags "-X github.com/spiarh/gojo/pkg/version.GitVersion=$EFFECTIVE_VERSION \
+            -X github.com/spiarh/gojo/pkg/version.gitTreeState=$TREE_STATE \
+            -X github.com/spiarh/gojo/pkg/version.gitCommit=$(git rev-parse --verify HEAD) \
+            -X github.com/spiarh/gojo/pkg/version.buildDate=$(date --rfc-3339=seconds | sed 's/ /T/')"

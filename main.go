@@ -7,8 +7,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"github.com/lcavajani/gojo/cmd"
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/cmd"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 func main() {

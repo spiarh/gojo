@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/execute"
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/core"
+	"github.com/spiarh/gojo/pkg/execute"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 type manager interface {

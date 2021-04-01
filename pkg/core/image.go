@@ -3,7 +3,7 @@ package core
 import (
 	"fmt"
 
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 func NewImageFromFQIN(fqin string) (Image, error) {

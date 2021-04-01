@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"time"
 
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 func BuildTag(facts []*Fact, tagFormat, imageDir string) (string, error) {

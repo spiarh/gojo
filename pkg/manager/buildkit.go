@@ -7,8 +7,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/pflag"
 
-	"github.com/lcavajani/gojo/pkg/core"
-	"github.com/lcavajani/gojo/pkg/execute"
+	"github.com/spiarh/gojo/pkg/core"
+	"github.com/spiarh/gojo/pkg/execute"
 )
 
 type Buildkit struct {

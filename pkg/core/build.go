@@ -11,7 +11,7 @@ import (
 
 	"github.com/blang/semver/v4"
 
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 func NewBuild(bmage, fromImage string) (*Build, error) {

@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-GO_MODULE_NAME="github.com/lcavajani/gojo"
+GO_MODULE_NAME="github.com/spiarh/gojo"
 GOLANGCI_LINT_CONFIG_FILE=""
 
 for arg in "$@"; do

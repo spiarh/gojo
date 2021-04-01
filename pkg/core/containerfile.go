@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"html/template"
 
-	"github.com/lcavajani/gojo/pkg/util"
+	"github.com/spiarh/gojo/pkg/util"
 )
 
 var containerfile = `ARG FROM_IMAGE

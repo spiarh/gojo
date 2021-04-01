@@ -1,4 +1,4 @@
-module github.com/lcavajani/gojo
+module github.com/spiarh/gojo
 
 go 1.16
 

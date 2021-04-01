@@ -3,7 +3,7 @@ ARG FROM_IMAGE_BUILDER
 
 FROM ${FROM_IMAGE_BUILDER} AS builder
 
-WORKDIR /go/src/github.com/lcavajani/gojo
+WORKDIR /go/src/github.com/spiarh/gojo
 COPY . .
 
 ARG EFFECTIVE_VERSION
