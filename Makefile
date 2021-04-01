@@ -1,12 +1,15 @@
-RUNTIME           := $(shell which docker 2>/dev/null || which podman)
+#RUNTIME           := $(shell which docker 2>/dev/null || which podman)
+RUNTIME           := buildah
 REPO_ROOT         := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 VERSION           := $(shell cat $(REPO_ROOT)/VERSION)
 EFFECTIVE_VERSION := $(VERSION)-$(shell git rev-parse HEAD)
 
 REGISTRY          ?= r.spiarh.fr
 FROM_IMAGE_BUILDER := docker.io/library/golang:1.16
-FROM_IMAGE        := $(REGISTRY)/alpine:3.13.2
-IMAGE             := $(REGISTRY)/gojo:$(EFFECTIVE_VERSION)
+#FROM_IMAGE        := $(REGISTRY)/alpine:3.13.2
+FROM_IMAGE        := gcr.io/kaniko-project/executor:debug
+# IMAGE             := $(REGISTRY)/library/gojo:$(EFFECTIVE_VERSION)
+IMAGE             := $(REGISTRY)/library/gojo-kaniko:$(EFFECTIVE_VERSION)
 
 .PHONY: revendor
 revendor:
@@ -34,8 +37,15 @@ install:
 
 .PHONY: build-image
 build-image:
-	@$(RUNTIME) build \
+	@$(RUNTIME) bud --no-cache \
 		--build-arg EFFECTIVE_VERSION=$(EFFECTIVE_VERSION) \
 		--build-arg FROM_IMAGE_BUILDER=$(FROM_IMAGE_BUILDER) \
 		--build-arg FROM_IMAGE=$(FROM_IMAGE) \
 		-t $(IMAGE) .
+
+.PHONY: push-image
+push-image:
+	@$(RUNTIME) push $(IMAGE)
+
+.PHONY: build-push-image
+build-push-image: build-image push-image

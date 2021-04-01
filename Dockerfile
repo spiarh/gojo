@@ -13,7 +13,7 @@ RUN make install EFFECTIVE_VERSION=$EFFECTIVE_VERSION
 
 FROM ${FROM_IMAGE}
 
-COPY --from=builder /go/bin/gojo /gojo
+COPY --from=builder /go/bin/gojo /usr/local/bin/gojo
 
 WORKDIR /
 
