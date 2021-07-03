@@ -61,9 +61,17 @@ func facts(command *cobra.Command, args []string) error {
 		return err
 	}
 
+	log.Info().Msg("build image tag")
+	if build.Image.Tag, err = core.BuildTag(build.Spec.Facts, build.Spec.TagFormat, build.Image.Context); err != nil {
+		return err
+	}
+	log.Info().
+		Str("tag", build.Image.Tag).
+		Msg("image tag")
+
 	if len(build.Spec.Sources) == 0 {
-		log.Warn().Msg("no value sources defined, nothing to do")
-		return nil
+		log.Warn().Msg("no value sources defined, no facts to search")
+		return build.WriteToFile(build.Image.BuildfilePath)
 	}
 
 	if err := build.ValidatePreProcess(); err != nil {
@@ -72,10 +80,6 @@ func facts(command *cobra.Command, args []string) error {
 
 	if err = setFacts(flagSet, build.Spec.Facts, build.Spec.Sources); err != nil {
 		log.Fatal().AnErr(core.ErrKey, err).Msg("retrieve facts")
-	}
-
-	if build.Image.Tag, err = core.BuildTag(build.Spec.Facts, build.Spec.TagFormat, build.Image.Context); err != nil {
-		return err
 	}
 
 	if opt.dryRun || (action == core.ListAction) {
