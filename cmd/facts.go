@@ -61,6 +61,23 @@ func facts(command *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Manage facts
+	if len(build.Spec.Sources) != 0 {
+		if err := build.ValidatePreProcess(); err != nil {
+			log.Fatal().AnErr(core.ErrKey, err).Msg("")
+		}
+
+		if err = setFacts(flagSet, build.Spec.Facts, build.Spec.Sources); err != nil {
+			log.Fatal().AnErr(core.ErrKey, err).Msg("retrieve facts")
+		}
+	} else {
+		log.Warn().Msg("no value sources defined, no facts to search")
+	}
+
+	if opt.dryRun || (action == core.ListAction) {
+		return nil
+	}
+
 	log.Info().Msg("build image tag")
 	if build.Image.Tag, err = core.BuildTag(build.Spec.Facts, build.Spec.TagFormat, build.Image.Context); err != nil {
 		return err
@@ -68,23 +85,6 @@ func facts(command *cobra.Command, args []string) error {
 	log.Info().
 		Str("tag", build.Image.Tag).
 		Msg("image tag")
-
-	if len(build.Spec.Sources) == 0 {
-		log.Warn().Msg("no value sources defined, no facts to search")
-		return build.WriteToFile(build.Image.BuildfilePath)
-	}
-
-	if err := build.ValidatePreProcess(); err != nil {
-		log.Fatal().AnErr(core.ErrKey, err).Msg("")
-	}
-
-	if err = setFacts(flagSet, build.Spec.Facts, build.Spec.Sources); err != nil {
-		log.Fatal().AnErr(core.ErrKey, err).Msg("retrieve facts")
-	}
-
-	if opt.dryRun || (action == core.ListAction) {
-		return nil
-	}
 
 	return build.WriteToFile(build.Image.BuildfilePath)
 }
